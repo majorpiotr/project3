@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+{% block body %}
+<div id = 'message'>
+
+{{message}}
+</div>
+{% from "/includes/_formhelpers.html" import render_field %}
+<script type="text/javascript">
+	$( document ).ready(function() {
+	status = '{{status}}';
+	
+	if (!status == '')
+	{
+		UIkit.notification("{{message}}", {pos: 'top-center' ,status: '{{status}}'} )
+		if (status == 'success')
+			{ 
+				$('#form').addClass('uk-alert-success');
+      	 		$('#message').addClass('uk-alert-success');
+			//$('#submit').addClass('uk-alert-success');
+			}
+		if (status == 'danger')
+			{ 
+				$('#form').addClass('uk-alert-danger');
+      	 		$('#message').addClass('uk-alert-danger');
+			//$('#submit').addClass('uk-alert-success');
+			}
+		
+	}			
+});
+
+</script>
+
+<form method="POST" id = 'form'>
+  <dl>
+	<div uk-sortable>
+    	<div>
+    	<label  > Username </label>
+		<input type="text" name="username"  class = 'form-control uk-input' value = {{request.form.username}}>
+    	</div>
+
+    	<div>
+		<label > Password </label>
+		<input type="password" name="password"  class = 'form-control uk-input' value = {{request.form.password}}>
+    	</div>
+    	<div>
+		<input type='submit' value='Login'>	
+    	</div>
+	</div>
+	
+
+
+  </dl>
+
+</form>
+{% endblock %}

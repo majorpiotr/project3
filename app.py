@@ -57,6 +57,61 @@ def register():
 		return redirect(url_for('index'))
 		#return render_template( 'register.html' )
 	return render_template( 'register.html' , form = form )
+#	User login
+@app.route('/login', methods = ['GET','POST'] )
+def login():
+	if request.method == 'POST':
+		# Get form fields 
+		username = request.form['username']
+		passwordcandidate = request.form['password']
 
+		# CREATE CURSOR
+		cur=mysql.connection.cursor()
+		# Get user by username 
+		result = cur.execute('SELECT * FROM users WHERE name = %s', [username])
+		if result > 0:
+			# Get hash
+			data = cur.fetchone()
+			password = data['password']
+			# Compare password
+			if sha256_crypt.verify(passwordcandidate,password):
+				session['logged_in']= True
+				session['username']= username
+
+				flash("your are now logged in")
+				return redirect(url_for('dashboard'))
+				message = 'Welcome again ' + username + "  :)  I wish you a lot of succeses in learning :)"
+				#message[1] = 'success'
+				return render_template('login.html', message = message, status = 'success')
+			else:
+				message = 'Unfortunetly :( Your password seams to be wrong. Are you sure that you are : ' + username + " ?"
+				#message[1] = 'danger'
+				return render_template('login.html', message = message, status ='danger')
+			cur.close()
+	else:
+		app.logger.info('There is no such a user')
+
+	return render_template('login.html')
+def is_logged_in(f):
+	@wraps(f)
+	def wrap(*args,**kwargs):
+		if 'logged_in' in session:
+			return f(*args,**kwargs)
+		else:
+			return redirect(url_for('login'))
+	return wrap
+#	user logout
+@app.route('/logout')
+@is_logged_in
+def logout():
+	session.clear()
+	return redirect(url_for('login'))
+
+#	Dashboard
+@app.route('/dashboard')
+@is_logged_in
+def dashboard():
+	return render_template("dashboard.html")
+app.secret_key='secret123'
 if __name__ == '__main__':
   app.run()
